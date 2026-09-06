@@ -6,7 +6,7 @@ client = genai.Client(
     api_key=os.environ["GEMINI_API_KEY"]
 )
 
-HISTORY_FILE = "history_output/previous_topics.json"
+HISTORY_FILE = "history_data/previous_topics.json"
 
 # Create output directory
 os.makedirs("history_output", exist_ok=True)
