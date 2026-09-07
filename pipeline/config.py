@@ -8,7 +8,49 @@ MUSIC_DIR = ASSETS_DIR / "music"
 FONTS_DIR = ASSETS_DIR / "fonts"
 
 # Gemini Model configuration
-DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+FALLBACK_GEMINI_MODELS = [
+    "gemini-3.6-flash",
+    "gemini-3-flash-preview",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash"
+]
+
+def call_gemini(client, contents: str, preferred_model: str = None):
+    """
+    Call Gemini generate_content with automatic fallback if a model is deprecated or unavailable.
+    """
+    models_to_try = []
+    if preferred_model:
+        models_to_try.append(preferred_model)
+    elif os.environ.get("GEMINI_MODEL"):
+        models_to_try.append(os.environ.get("GEMINI_MODEL"))
+    
+    for m in FALLBACK_GEMINI_MODELS:
+        if m not in models_to_try:
+            models_to_try.append(m)
+
+    last_error = None
+    for model in models_to_try:
+        try:
+            # print(f"Calling Gemini with model: {model}...")
+            response = client.models.generate_content(
+                model=model,
+                contents=contents
+            )
+            return response
+        except Exception as e:
+            err_str = str(e)
+            if "404" in err_str or "NOT_FOUND" in err_str or "not available" in err_str:
+                print(f"Notice: Model '{model}' not found or unavailable ({err_str[:80]}...). Trying next candidate...")
+                last_error = e
+                continue
+            raise e
+
+    if last_error:
+        raise last_error
+    raise RuntimeError("No Gemini models available to try.")
+
 
 # Video Output Specifications
 VIDEO_WIDTH = 1080

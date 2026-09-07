@@ -5,7 +5,7 @@ import urllib.parse
 from pathlib import Path
 from typing import Dict, Any, List
 from google import genai
-from pipeline.config import get_channel_config, DEFAULT_GEMINI_MODEL
+from pipeline.config import get_channel_config, DEFAULT_GEMINI_MODEL, call_gemini
 from pipeline.topic_generator import _clean_json_response
 
 def search_wikipedia(query: str) -> Dict[str, Any]:
@@ -101,7 +101,7 @@ Return ONLY valid JSON in this format:
 Do not use markdown.
 """
         try:
-            res = client.models.generate_content(model=model, contents=prompt)
+            res = call_gemini(client, prompt, preferred_model=model)
             clean_res = _clean_json_response(res.text)
             parsed = json.loads(clean_res)
             facts = parsed.get("verified_facts", [])

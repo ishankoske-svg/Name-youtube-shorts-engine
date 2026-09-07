@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 from typing import Dict, Any, List
 from google import genai
-from pipeline.config import get_channel_config, DEFAULT_GEMINI_MODEL
+from pipeline.config import get_channel_config, DEFAULT_GEMINI_MODEL, call_gemini
 
 def _clean_json_response(text: str) -> str:
     text = text.strip()
@@ -183,11 +183,8 @@ def generate_topic(channel: str, model_name: str = None) -> Dict[str, Any]:
     previous_topics = load_previous_topics(cfg["topic_file"])
     prompt = get_topic_prompt(channel, previous_topics)
 
-    print(f"[{channel.upper()}] Calling Gemini ({model}) for new topic...")
-    response = client.models.generate_content(
-        model=model,
-        contents=prompt
-    )
+    print(f"[{channel.upper()}] Calling Gemini for new topic...")
+    response = call_gemini(client, prompt, preferred_model=model)
 
     clean_text = _clean_json_response(response.text)
     data = json.loads(clean_text)

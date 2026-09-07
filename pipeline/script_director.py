@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import Dict, Any, List
 from google import genai
-from pipeline.config import get_channel_config, DEFAULT_GEMINI_MODEL
+from pipeline.config import get_channel_config, DEFAULT_GEMINI_MODEL, call_gemini
 from pipeline.topic_generator import _clean_json_response
 
 def create_storyboard(channel: str, topic_data: Dict[str, Any], model_name: str = None) -> Dict[str, Any]:
@@ -56,7 +56,7 @@ Do not use markdown.
     if client:
         try:
             print(f"[{channel.upper()}] Directing storyboard with Gemini...")
-            res = client.models.generate_content(model=model, contents=prompt)
+            res = call_gemini(client, prompt, preferred_model=model)
             clean_res = _clean_json_response(res.text)
             storyboard = json.loads(clean_res)
         except Exception as e:
