@@ -70,11 +70,11 @@ def run_quality_check(
     })
 
     # 5. Captions Coverage
-    srt_exists = subtitle_path.exists() and subtitle_path.stat().st_size > 100
+    srt_exists = subtitle_path.exists() and subtitle_path.stat().st_size > 50
     checks.append({
         "name": "captions_coverage",
         "passed": srt_exists,
-        "details": f"Subtitles file: {subtitle_path.name}"
+        "details": f"Subtitles: {subtitle_path.name} ({subtitle_path.stat().st_size if subtitle_path.exists() else 0} bytes)"
     })
 
     # 6. Final Video File

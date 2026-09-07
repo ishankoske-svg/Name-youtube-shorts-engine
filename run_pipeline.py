@@ -68,7 +68,9 @@ def run_pipeline(channel: str, stage: str = "all", model_name: str = None) -> No
     print("\n🎙️ [4/7] Synthesizing voice narration & subtitles...")
     script_text = topic_data.get("script", "")
     audio_path, raw_srt, audio_dur = generate_voiceover(channel, script_text, out_dir)
-    subtitle_path = create_short_captions_from_srt(raw_srt, out_dir / "captions")
+    subtitle_path = create_short_captions_from_srt(
+        raw_srt, out_dir / "captions", narration_text=script_text, audio_duration=audio_dur
+    )
     if stage == "voice":
         print("Done voice & captions stage.")
         return

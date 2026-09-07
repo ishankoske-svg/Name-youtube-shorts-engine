@@ -14,8 +14,8 @@ async def _generate_edge_tts(text: str, voice: str, rate: str, audio_path: Path)
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
                 f.write(chunk["data"])
-            elif chunk["type"] == "WordBoundary":
-                submaker.feed((chunk["offset"], chunk["duration"]), chunk["text"])
+            elif chunk["type"] in ("WordBoundary", "SentenceBoundary"):
+                submaker.feed(chunk)
                 
     return submaker.get_srt()
 

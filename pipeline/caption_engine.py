@@ -18,7 +18,13 @@ def _format_timestamp_ass(seconds: float) -> str:
         centis = 99
     return f"{hrs}:{mins:02d}:{secs:02d}.{centis:02d}"
 
-def create_short_captions_from_srt(raw_srt: str, output_path: Path, max_words_per_cue: int = 3) -> Path:
+def create_short_captions_from_srt(
+    raw_srt: str,
+    output_path: Path,
+    narration_text: str = "",
+    audio_duration: float = 0.0,
+    max_words_per_cue: int = 3
+) -> Path:
     """
     Format raw word-level or sentence-level subtitles into punchy 2-3 word uppercase cues
     optimized for YouTube Shorts visual engagement.
@@ -47,8 +53,19 @@ def create_short_captions_from_srt(raw_srt: str, output_path: Path, max_words_pe
                 "text": text
             })
 
-    # If raw srt was empty or failed, fallback to empty
-    if not cues:
+    # If raw srt was empty or failed, generate proportional cues from narration text
+    if not cues and narration_text:
+        words = narration_text.split()
+        dur = max(5.0, audio_duration)
+        word_dur = dur / max(1, len(words))
+        for i in range(0, len(words), max_words_per_cue):
+            chunk = words[i:i + max_words_per_cue]
+            cues.append({
+                "start": i * word_dur,
+                "end": min(dur, (i + len(chunk)) * word_dur),
+                "text": " ".join(chunk)
+            })
+    elif not cues:
         cues = [{"start": 0.0, "end": 4.0, "text": "DISCOVER THE TRUTH"}]
 
     # Chunk cues into 2-4 words bursts
