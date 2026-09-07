@@ -1,16 +1,16 @@
-name: History Short Pipeline
+name: Science Short Pipeline
 
 on:
   schedule:
-    - cron: "0 4 * * *" # Daily at 04:00 UTC (09:30 AM IST)
+    - cron: "0 3 * * *" # Daily at 03:00 UTC (08:30 AM IST)
   workflow_dispatch:
 
 concurrency:
-  group: history-pipeline
+  group: science-pipeline
   cancel-in-progress: false
 
 jobs:
-  build-history-short:
+  build-science-short:
     runs-on: ubuntu-latest
 
     permissions:
@@ -36,24 +36,24 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run History Pipeline
+      - name: Run Science Pipeline
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python run_pipeline.py --channel history --stage all
+          python run_pipeline.py --channel science --stage all
 
       - name: Commit Topic Database Update
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add history_data/previous_topics.json
-          git commit -m "chore: update history topic database [skip ci]" || echo "No topic updates to commit"
+          git add science_data/previous_topics.json
+          git commit -m "chore: update science topic database [skip ci]" || echo "No topic updates to commit"
           git pull --rebase origin ${GITHUB_REF_NAME}
           git push origin HEAD:${GITHUB_REF_NAME}
 
-      - name: Upload Generated History Short Artifacts
+      - name: Upload Generated Science Short Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: history-short-pack
-          path: history_output/
+          name: science-short-pack
+          path: science_output/
           retention-days: 14

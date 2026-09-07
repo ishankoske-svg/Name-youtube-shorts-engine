@@ -1,0 +1,44 @@
+name: Publish Short to YouTube
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel to Publish"
+        required: true
+        type: choice
+        options:
+          - science
+          - history
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install google-api-python-client google-auth-oauthlib
+
+      - name: Download Latest Pipeline Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.channel }}-short-pack
+          path: ${{ inputs.channel }}_output/
+
+      - name: Upload to YouTube (Private / Unlisted)
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN_SCIENCE: ${{ secrets.YOUTUBE_REFRESH_TOKEN_SCIENCE }}
+          YOUTUBE_REFRESH_TOKEN_HISTORY: ${{ secrets.YOUTUBE_REFRESH_TOKEN_HISTORY }}
+        run: |
+          python run_pipeline.py --channel ${{ inputs.channel }} --stage upload

@@ -1,0 +1,47 @@
+# Python cache and environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Environment and secrets
+.env
+*.pem
+*.key
+client_secret*.json
+token*.json
+
+# Pipeline runtime output directories (generated during runs)
+history_output/
+science_output/
+run_output/
+output/
+temp/
+build/
+audio/
+video/
+captions/
+visuals/
+logs/
+
+# Media artifacts generated at runtime
+*.mp4
+*.wav
+*.mp3
+*.srt
+*.ass
+*.log
+
+# Keep assets and persistent data
+!assets/
+!assets/music/*.mp3
+!science_data/
+!history_data/
+!science_research/
+!history_research/
+
+# OS specific
+.DS_Store
+Thumbs.db

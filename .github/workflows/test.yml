@@ -1,27 +1,66 @@
-name: Test Gemini
+name: Stage Test & Diagnostic
 
 on:
   workflow_dispatch:
+    inputs:
+      channel:
+        description: "Target Channel"
+        required: true
+        type: choice
+        options:
+          - science
+          - history
+      stage:
+        description: "Pipeline Stage to Test"
+        required: true
+        type: choice
+        default: "topic"
+        options:
+          - topic
+          - research
+          - storyboard
+          - voice
+          - visuals
+          - render
+          - all
 
 jobs:
-  test:
+  test-stage:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
+
+      - name: Install FFmpeg
+        if: ${{ inputs.stage == 'render' || inputs.stage == 'all' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
 
       - name: Install dependencies
         run: |
-          pip install google-genai
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Run Gemini test
+      - name: Run Stage Test
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python test_gemini.py
+          python run_pipeline.py --channel ${{ inputs.channel }} --stage ${{ inputs.stage }}
+
+      - name: Upload Output Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output-${{ inputs.channel }}-${{ inputs.stage }}
+          path: ${{ inputs.channel }}_output/
