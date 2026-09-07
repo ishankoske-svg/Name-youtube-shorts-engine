@@ -15,7 +15,7 @@ from pipeline.researcher import research_topic
 from pipeline.script_director import create_storyboard
 from pipeline.voice_engine import generate_voiceover
 from pipeline.caption_engine import create_short_captions_from_srt
-from pipeline.visual_fetcher import fetch_scene_visuals
+from pipeline.visual_fetcher import fetch_all_shot_visuals
 from pipeline.video_renderer import render_video
 from pipeline.qc_validator import run_quality_check
 from pipeline.metadata_builder import generate_youtube_metadata
@@ -74,9 +74,9 @@ def run_pipeline(channel: str, stage: str = "all", model_name: str = None) -> No
         return
 
     # --- STAGE 5: VISUAL ASSET FETCHING ---
-    print("\n🖼️ [5/7] Acquiring high-resolution visual assets...")
+    print("\n🖼️ [5/7] Acquiring high-resolution visual assets (Level 1-5 resolution)...")
     visuals_dir = out_dir / "visuals"
-    visual_manifest = fetch_scene_visuals(channel, storyboard, visuals_dir)
+    visual_manifest = fetch_all_shot_visuals(channel, storyboard, visuals_dir)
     if stage == "visuals":
         print("Done visual assets stage.")
         return
