@@ -29,7 +29,7 @@ jobs:
         run: |
           python history_generator.py
 
-            - name: Check generated history database
+      - name: Check generated history database
         run: |
           echo "===== HISTORY DATABASE ====="
           cat history_data/previous_topics.json
