@@ -146,7 +146,7 @@ def main():
     parser.add_argument(
         "--model",
         default=None,
-        help="Override default Gemini model (e.g. gemini-2.5-flash)"
+        help="Override default Gemini model (e.g. gemini-3.6-flash)"
     )
     args = parser.parse_args()
     run_pipeline(channel=args.channel, stage=args.stage, model_name=args.model)

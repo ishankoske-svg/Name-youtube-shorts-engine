@@ -55,6 +55,7 @@ jobs:
       - name: Run Stage Test
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: "gemini-3.6-flash"
         run: |
           python run_pipeline.py --channel ${{ inputs.channel }} --stage ${{ inputs.stage }}
 
