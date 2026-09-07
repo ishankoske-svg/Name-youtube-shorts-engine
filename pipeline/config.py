@@ -7,6 +7,8 @@ ASSETS_DIR = BASE_DIR / "assets"
 MUSIC_DIR = ASSETS_DIR / "music"
 FONTS_DIR = ASSETS_DIR / "fonts"
 
+import time
+
 # Gemini Model configuration
 DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 FALLBACK_GEMINI_MODELS = [
@@ -18,7 +20,8 @@ FALLBACK_GEMINI_MODELS = [
 
 def call_gemini(client, contents: str, preferred_model: str = None):
     """
-    Call Gemini generate_content with automatic fallback if a model is deprecated or unavailable.
+    Call Gemini generate_content with automatic retry and model rotation if a model
+    is deprecated, unavailable (503), rate-limited (429), or experiencing high demand spikes.
     """
     models_to_try = []
     if preferred_model:
@@ -31,25 +34,31 @@ def call_gemini(client, contents: str, preferred_model: str = None):
             models_to_try.append(m)
 
     last_error = None
+    transient_indicators = ["503", "429", "404", "UNAVAILABLE", "NOT_FOUND", "high demand", "RESOURCE_EXHAUSTED", "ServerError"]
+
     for model in models_to_try:
-        try:
-            # print(f"Calling Gemini with model: {model}...")
-            response = client.models.generate_content(
-                model=model,
-                contents=contents
-            )
-            return response
-        except Exception as e:
-            err_str = str(e)
-            if "404" in err_str or "NOT_FOUND" in err_str or "not available" in err_str:
-                print(f"Notice: Model '{model}' not found or unavailable ({err_str[:80]}...). Trying next candidate...")
-                last_error = e
-                continue
-            raise e
+        for attempt in range(2):
+            try:
+                # print(f"Calling Gemini with model: {model} (attempt {attempt+1})...")
+                response = client.models.generate_content(
+                    model=model,
+                    contents=contents
+                )
+                return response
+            except Exception as e:
+                err_str = str(e)
+                is_transient_or_model_error = any(ind.lower() in err_str.lower() for ind in transient_indicators)
+                if is_transient_or_model_error:
+                    print(f"Notice: Model '{model}' issue (attempt {attempt+1}): {err_str[:90]}... Rotating/Retrying...")
+                    last_error = e
+                    time.sleep(2)
+                    continue
+                raise e
 
     if last_error:
         raise last_error
     raise RuntimeError("No Gemini models available to try.")
+
 
 
 # Video Output Specifications
